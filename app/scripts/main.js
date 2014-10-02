@@ -72,12 +72,20 @@ var ProjectListView = Backbone.View.extend({
 
 		$('.jumbotron').prepend(this.el);
 
-		this.listenTo(this.collection, 'add', function(project) {
-        new ProjectView({model: project});
-
-        console.log(project);
-		});
+    this.listenTo(this.collection, 'sync', this.render);
+		this.listenTo(this.collection, 'add', this.renderChild);
 	},
+
+  render: function(){
+    this.$el.empty();
+    this.collection.each(_.bind(this.renderChild, this));
+  },
+
+  renderChild: function(project){
+    var projectView = new ProjectView({ model: project });
+    projectView.render();
+    this.$el.prepend(projectView.el);
+  }
 
 });
 
@@ -103,36 +111,20 @@ var ProjectView = Backbone.View.extend({
   template: _.template( $('#project').text() ),
 
   initialize: function() {
-    $('.project-list').prepend(this.el); 
-    // this.$el.append(this.model.get('title'));
-    // var templateFunction = _.template($('#project').text());
-    // var renderedTemplate = this.template(this.model.attributes);
-    this.$el.html(this.template(this.model.attributes));
-    // this.render();
+    this.listenTo(this.model, 'destroy', this.remove);
 
     var toDoItems = new ToDoItemCollection();
-    this.collection = toDoItems;
-
-
-    new CreateToDoView({collection: toDoItems});
+    // can pass in container in new ToDoItem above with this.$el (ProjectView)
+    this.collection = toDoItems; 
     this.listenTo(this.collection, 'add', function(toDoItem) {                // Go back and name this
-        this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
+    this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
         // this.$('.toDos').append(toDoItem.el); would also work
-
-       
-
-        // new ToDoItem({model: toDoItem});    /*Unnecessary?*/
-       
-
-
-        // can pass in container in new ToDoItem above with this.$el (ProjectView)
-    this.listenTo(this.model, 'destroy', this.remove);
     });
 
   },
 
   events: {
-    'change': 'toggleCompleted',
+    'change input[type=checkbox]': 'toggleCompleted',
     'click button': 'destroyBook'
   },
 
@@ -146,30 +138,19 @@ var ProjectView = Backbone.View.extend({
     this.model.destroy();
   },
 
-
-
-  // render: function() {
-  //   // var templateFunction = _.template($('#project').text());
-  //   var renderedTemplate = this.template(this.model.attributes);
-  //   this.$el.html(renderedTemplate);
-  //     if (this.model.get('isCompleted')) {
-  //      this.$('input').attr('checked', 'checked');
-  //     }
-  // }
-
-
-
-  // render: function () {
-  //   $(this.el).html('yo');
-  // }
+  render: function() {
+    this.$el.html(this.template(this.model.attributes));
+    if (this.model.get('isCompleted')) {
+       this.$('input').attr('checked', 'checked');
+    }
+    var createView = new CreateToDoView({collection: this.collection});
+    this.$('.newInput').append(createView.el);
+  }
 });
 
 var CreateToDoView = Backbone.View.extend({
   tagName: 'input',
   className: 'create-toDo',
-  initialize: function() {
-    $('.newInput').first().append(this.el);
-  },
 
   attributes: {
     type: 'text'
@@ -179,12 +160,20 @@ var CreateToDoView = Backbone.View.extend({
     'keyup': 'addToTDList'
   },
 
+
   addToTDList: function(event){
     if(event.keyCode === 13){
+      console.log(event);
       var toDoItem = this.collection.add({title: this.$el.val()});
       this.el.value="";
     }
   }
+
+  // render: function() {
+  //   this.listenTo(this.collection, 'add', function(toDoItem) {                // Go back and name this
+  //   this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
+  //   }
+  // }
 });
 
 
