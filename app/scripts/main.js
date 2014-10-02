@@ -2,6 +2,9 @@
 'use strict';
 
 
+// Add x and complete icons in template. If use clicks on one of these with a certain item's id, then do that fn to that item.
+
+
 var Project = Backbone.Model.extend({});
 var ProjectCollection = Backbone.Collection.extend({
 	model: Project
@@ -32,7 +35,8 @@ var CreateProjectView = Backbone.View.extend({
 
   addToPList: function(event){
     if(event.keyCode === 13){
-	   var project = this.collection.add({title: this.$el.val()});
+      var project = this.collection.add({title: this.$el.val()});     /* At this point this variable declaration is unnecessary? */
+      this.el.value="";
     }
   }
 });
@@ -60,6 +64,20 @@ var ProjectView = Backbone.View.extend({
     var templateFunction = _.template($('#project').text());
     var renderedTemplate = templateFunction(this.model.attributes);
     this.$el.html(renderedTemplate);
+
+
+    var toDoItems = new ToDoItemCollection();
+    this.collection = toDoItems;
+
+    new CreateToDoView({collection: toDoItems});
+
+    this.listenTo(this.collection, 'add', function(toDoItem) {    
+        this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
+        new ToDoItem({model: toDoItem});
+        console.log(toDoItem);
+        // this.$el.append(toDoItem);
+    });
+
   },
 
   // render: function () {
@@ -67,20 +85,37 @@ var ProjectView = Backbone.View.extend({
   // }
 });
 
+var CreateToDoView = Backbone.View.extend({
+  tagName: 'input',
+  className: 'create-toDo',
+  initialize: function() {
+    $('.newInput').first().append(this.el);
+  },
+
+  attributes: {
+    type: 'text'
+  },
+
+  events: {       
+    'keyup': 'addToTDList'
+  },
+
+  addToTDList: function(event){
+    if(event.keyCode === 13){
+      var toDoItem = this.collection.add({title: this.$el.val()});
+      this.el.value="";
+    }
+  }
+});
+
 
 
 
 $(document).ready(function(){
 	var projects = new ProjectCollection();
-  var toDoItems = new ToDoItemCollection();
-
 	var createProjectView = new CreateProjectView({collection: projects});
 	// createProjectView.render();
-
 	var projectListView = new ProjectListView({collection: projects});
-  // console.log(projectListView);
-  // var projectView = new ProjectView({collection: toDoItems});
-  // console.log(projectView);
 });
 
 
