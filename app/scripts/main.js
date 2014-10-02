@@ -2,7 +2,9 @@
 'use strict';
 
 
-// Add x and complete icons in template. If use clicks on one of these with a certain item's id, then do that fn to that item.
+// Add x and complete icons to each li. If use clicks on one of these with a certain item's id, then do that fn to that item.
+// Make all buttons work.
+// Connect to tinypizzaserver.
 
 
 var Project = Backbone.Model.extend({});
