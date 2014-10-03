@@ -1,0 +1,5 @@
+    bottom of project view initialize
+
+    this.listenTo(this.collection, 'add', function(toDoItem) {                // Go back and name this
+    this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
+        // this.$('.toDos').append(toDoItem.el); would also work

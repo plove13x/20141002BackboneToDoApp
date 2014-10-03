@@ -26,13 +26,9 @@ var ProjectCollection = Backbone.Firebase.Collection.extend({
   firebase: "https://crackling-torch-1951.firebaseIO.com/"
 });
 
-var ToDoItem = Backbone.Model.extend({
-  firebase: new Backbone.Firebase("https://crackling-torch-1951.firebaseIO.com/"),
-});
-
+var ToDoItem = Backbone.Model.extend({});
 var ToDoItemCollection = Backbone.Collection.extend({
-  model: ToDoItem,
-  firebase: "https://crackling-torch-1951.firebaseIO.com/"
+  model: ToDoItem
 }); 
 
 
@@ -93,17 +89,21 @@ var ProjectListView = Backbone.View.extend({
 
 });
 
+
 // initialize: function(options){
 //   options = options || {};
 //   this.container = options.$container;
 //   this.$container.append(this.el);
 // }
 
+
+
   // events: {
   //   'click li .delete': 'deleteProject'
   // },
 
   // deleteProject: function(e) {   $(e.target).attr('data-id') }
+
 
 var ProjectView = Backbone.View.extend({
   tagName: 'li',
@@ -116,8 +116,10 @@ var ProjectView = Backbone.View.extend({
     var toDoItems = new ToDoItemCollection();
     // can pass in container in new ToDoItem above with this.$el (ProjectView)
     this.collection = toDoItems; 
-    this.listenTo(this.collection, 'sync', this.render);
-    this.listenTo(this.collection, 'add', this.renderChild);
+    this.listenTo(this.collection, 'add', function(toDoItem) {                // Go back and name this
+    this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
+        // this.$('.toDos').append(toDoItem.el); would also work
+    });
 
   },
 
@@ -137,29 +139,18 @@ var ProjectView = Backbone.View.extend({
   },
 
   render: function() {
-    this.$el.empty();
     this.$el.html(this.template(this.model.attributes));
     if (this.model.get('isCompleted')) {
        this.$('input').attr('checked', 'checked');
     }
-    var createToDoView = new CreateToDoView({collection: this.collection});
-    this.$('.newInput').append(createToDoView.el);
-    var toDoListView = new ToDoListView({collection: this.collection});
-    this.$('.create-toDo').prepend(toDoListView.el);
-    this.collection.each(_.bind(this.renderChild, this));
-  },
-
-  renderChild: function(toDoItem) {
-    this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
+    var createView = new CreateToDoView({collection: this.collection});
+    this.$('.newInput').append(createView.el);
   }
-
 });
 
 var CreateToDoView = Backbone.View.extend({
   tagName: 'input',
   className: 'create-toDo',
-  // initialize: function {
-  // },
 
   attributes: {
     type: 'text'
@@ -173,9 +164,8 @@ var CreateToDoView = Backbone.View.extend({
   addToTDList: function(event){
     if(event.keyCode === 13){
       console.log(event);
-      var toDoItem = this.collection.create({title: this.$el.val()});
+      var toDoItem = this.collection.add({title: this.$el.val()});
       this.el.value="";
-      console.log(this.collection);   /* Can't figure out what this says */
     }
   }
 
@@ -187,21 +177,6 @@ var CreateToDoView = Backbone.View.extend({
 });
 
 var ToDoListView = Backbone.View.extend({
-  tagName: 'ul',
-  className: 'toDos',
-  render: function(){
-    $('.newInput').prepend(this.el);
-  }
-
-
-
-    // toDoItems = new ToDoItemCollection();
-    // // can pass in container in new ToDoItem above with this.$el (ProjectView)
-    // this.collection = toDoItems; 
-    // this.listenTo(this.collection, 'add', function(toDoItem) {                // Go back and name this
-    // this.$('.toDos').append('<li>' + toDoItem.get('title') + '</li>');
-    //     // this.$('.toDos').append(toDoItem.el); would also work
-    // });
 
 });
 
